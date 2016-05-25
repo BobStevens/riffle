@@ -8,6 +8,8 @@
  * microSD card. The blue LED on digital pin 9 blinks at 1Hz when functioning 
  * properly.
  * 
+ * This code is based on example code from Adafruit_BMP085_Unified sensor driver
+ * https://github.com/adafruit/Adafruit_BMP085_Unified
  * 
  * Riffle 2x7 connector <--> BMP180 sensor board
  *  1) GND ------------------ GND
