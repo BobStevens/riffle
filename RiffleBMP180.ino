@@ -1,3 +1,21 @@
+/* Riffle datalogging with BMP180 barometric pressure sensor
+ * https://publiclab.org/wiki/riffle
+ * https://www.adafruit.com/product/1603
+ * 
+ * This program will continously log the barometric pressure, altitude, and 
+ * temperature from the BMP180 sensor along with an RTC datestamp 
+ * and RTC temperature reading. The values are stored in a CSV file on the
+ * microSD card. The blue LED on digital pin 9 blinks at 1Hz when functioning 
+ * properly.
+ * 
+ * 
+ * Riffle 2x7 connector <--> BMP180 sensor board
+ *  1) GND ------------------ GND
+ *  3) 3v3 ------------------ VIN
+ *  9) SDA ------------------ SDA
+ * 11) SCL ------------------ SCL
+ *
+ */
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
@@ -89,7 +107,7 @@ void loop(void) {
   static unsigned long blink_ms = millis();
   static unsigned long sensor_ms = millis();
   
-  // wait 1000ms for next reading
+  // wait SENSOR_MS ms for next reading
   if (millis() - sensor_ms > SENSOR_MS) {
     
     File dataFile = SD.open("test.csv", FILE_WRITE);
@@ -133,6 +151,8 @@ void loop(void) {
       
     } else {
       dataString += String("error,error,error");
+      // error notification
+      ledValue = 1;
     }
     
     int t = RTC.temperature();
