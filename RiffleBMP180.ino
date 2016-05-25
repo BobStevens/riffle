@@ -16,12 +16,13 @@
  * 11) SCL ------------------ SCL
  *
  */
+ 
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
 
-#include <DS3232RTC.h>        //http://github.com/JChristensen/DS3232RTC
-#include <Time.h>             //https://github.com/PaulStoffregen/Time
+#include <DS3232RTC.h>        // http://github.com/JChristensen/DS3232RTC
+#include <Time.h>             // https://github.com/PaulStoffregen/Time
 #include <SPI.h>
 #include <SD.h>
 
@@ -31,6 +32,10 @@
 
 // Sensor reading delay
 #define SENSOR_MS 1000
+
+// Sea level pressure for accurate altitude calculations
+// #define SEALEVEL_HPA SENSORS_PRESSURE_SEALEVELHPA
+#define SEALEVEL_HPA 1014.5
 
 // LED state
 bool ledValue = 1;
@@ -139,8 +144,7 @@ void loop(void) {
       dataString += String(",");
   
       // Altitude m
-      // SENSORS_PRESSURE_SEALEVELHPA
-      dataString += String(bmp.pressureToAltitude(1014.5,event.pressure), 3);  
+      dataString += String(bmp.pressureToAltitude(SEALEVEL_HPA ,event.pressure), 3);  
       dataString += String(",");
                                         
       // Temp 
