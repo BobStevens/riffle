@@ -9,7 +9,9 @@
  * from the Riffle battery voltage divider on A3 is also recorded. The MQ-4 gas
  * sensor utilizes a built-in heater which is powered by the battery. Changes
  * in battery voltage may affect the sensor's analog reading value.
- * The data is appended to a CSV text file on the microSD card.
+ * 
+ * The data is appended to a CSV text file on the microSD card:
+ * Date/Time,Latitude,Longitude,Altitude,Gas Sensor,Battery
  *  
  * The blue LED on the Riffle blinks at a rate proportional to the sensor value.
  * A failed GPS fix is signaled by a series of four short blinks. Data will
