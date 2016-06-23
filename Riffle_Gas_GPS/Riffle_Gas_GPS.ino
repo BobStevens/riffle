@@ -117,9 +117,10 @@ void gpsHardwareReset()
   while (1) {
     while (gps.available()) {
       char c = gps.read();    
-      if (nmea.process(c))
+      if (nmea.process(c)) {
         digitalWrite(LED, LOW);
         return;
+      }
     }
   }
 }
@@ -163,7 +164,7 @@ void setup()
   // MicroNMEA::sendSentence(gps, "$PONME,2,6,1,0");
   MicroNMEA::sendSentence(gps, "$PONME,,,1,0");
 
-   // Clear the list of messages which are sent.
+  // Clear the list of messages which are sent.
   MicroNMEA::sendSentence(gps, "$PORZB");
 
   // Send RMC and GGA messages.
