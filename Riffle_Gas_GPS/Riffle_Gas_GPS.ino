@@ -162,13 +162,13 @@ void setup()
   
   // Compatibility mode off
   // MicroNMEA::sendSentence(gps, "$PONME,2,6,1,0");
-  MicroNMEA::sendSentence(gps, "$PONME,,,1,0");
+  //MicroNMEA::sendSentence(gps, "$PONME,,,1,0");
 
   // Clear the list of messages which are sent.
-  MicroNMEA::sendSentence(gps, "$PORZB");
+  //MicroNMEA::sendSentence(gps, "$PORZB");
 
   // Send RMC and GGA messages.
-  MicroNMEA::sendSentence(gps, "$PORZB,RMC,1,GGA,1");
+  //MicroNMEA::sendSentence(gps, "$PORZB,RMC,1,GGA,1");
   // MicroNMEA::sendSentence(gps, "$PORZB,RMC,1,GGA,1,GSV,1");
   
   // reserve memory for the datastring, to reduce memory fragmentation
@@ -181,19 +181,19 @@ void loop()
   static unsigned long blink_ms = millis();
   static unsigned long sensor_ms = millis();
 
+  // if a sentence is received, we can check the checksum, parse it...
+  while (gps.available()) {
+    char c = gps.read();
+    Serial.print(c);
+    nmea.process(c);
+  }
+  //Serial.println();
+
   // wait SENSOR_DELAY_MS for next logging attempt
   if (millis() - sensor_ms > SENSOR_DELAY_MS) {
 
     // put all values in the dataString, which will be written to the logfile
     dataString = "";
-
-    // if a sentence is received, we can check the checksum, parse it...
-    while (gps.available()) {
-      char c = gps.read();
-      Serial.print(c);
-      nmea.process(c);
-    }
-    Serial.println();
 
     // timestamp
     myTime = RTC.get();
