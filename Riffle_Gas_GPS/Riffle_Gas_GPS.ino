@@ -42,10 +42,8 @@
 
 #include <SD.h>
 // GPS on alternate serial port
-//#include <SoftwareSerial.h>
 #include <NeoSWSerial.h>      // https://github.com/SlashDevin/NeoSWSerial
 
-//#include <MicroNMEA.h>      // https://github.com/stevemarple/MicroNMEA
 #include <TinyGPS++.h>      // https://github.com/mikalhart/TinyGPSPlus
 #include <DS3232RTC.h>        //http://github.com/JChristensen/DS3232RTC
 #include <Time.h>             //https://github.com/PaulStoffregen/Time
