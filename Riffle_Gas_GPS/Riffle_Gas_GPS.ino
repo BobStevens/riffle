@@ -42,15 +42,18 @@
 
 #include <SD.h>
 // GPS on alternate serial port
-#include <SoftwareSerial.h>
-#include <MicroNMEA.h>      // https://github.com/stevemarple/MicroNMEA
+//#include <SoftwareSerial.h>
+#include <NeoSWSerial.h>      // https://github.com/SlashDevin/NeoSWSerial
+
+//#include <MicroNMEA.h>      // https://github.com/stevemarple/MicroNMEA
+#include <TinyGPS++.h>      // https://github.com/mikalhart/TinyGPSPlus
 #include <DS3232RTC.h>        //http://github.com/JChristensen/DS3232RTC
 #include <Time.h>             //https://github.com/PaulStoffregen/Time
 
 // Logging
-#define LOG_FILE "GAS-16.CSV"
+#define LOG_FILE "GAS-23.CSV"
 // delay between data logging events in milliseconds
-#define SENSOR_DELAY_MS 10000
+#define SENSOR_DELAY_MS 3000
 
 // Riffle Status LED
 #define LED 9
@@ -86,9 +89,10 @@ File dataFile;
 time_t myTime;
 
 // software serial for TTL-UART GPS module
-SoftwareSerial gps = SoftwareSerial(GPS_TX, GPS_RX);
-char nmeaBuffer[85];
-MicroNMEA nmea(nmeaBuffer, sizeof(nmeaBuffer));
+NeoSWSerial gps(GPS_TX, GPS_RX);
+
+// The TinyGPS++ object
+TinyGPSPlus nmea;
 
 // data to write to file
 String dataString;
@@ -116,8 +120,7 @@ void gpsHardwareReset()
   // Reset is complete when the first valid message is received
   while (1) {
     while (gps.available()) {
-      char c = gps.read();    
-      if (nmea.process(c)) {
+      if (nmea.encode(gps.read())) {
         digitalWrite(LED, LOW);
         return;
       }
@@ -160,17 +163,6 @@ void setup()
   gpsHardwareReset();
   Serial.println(F("GPS reset."));
   
-  // Compatibility mode off
-  // MicroNMEA::sendSentence(gps, "$PONME,2,6,1,0");
-  //MicroNMEA::sendSentence(gps, "$PONME,,,1,0");
-
-  // Clear the list of messages which are sent.
-  //MicroNMEA::sendSentence(gps, "$PORZB");
-
-  // Send RMC and GGA messages.
-  //MicroNMEA::sendSentence(gps, "$PORZB,RMC,1,GGA,1");
-  // MicroNMEA::sendSentence(gps, "$PORZB,RMC,1,GGA,1,GSV,1");
-  
   // reserve memory for the datastring, to reduce memory fragmentation
   dataString.reserve(100);
 }
@@ -184,10 +176,8 @@ void loop()
   // if a sentence is received, we can check the checksum, parse it...
   while (gps.available()) {
     char c = gps.read();
-    Serial.print(c);
-    nmea.process(c);
+    nmea.encode(c);
   }
-  //Serial.println();
 
   // wait SENSOR_DELAY_MS for next logging attempt
   if (millis() - sensor_ms > SENSOR_DELAY_MS) {
@@ -210,20 +200,24 @@ void loop()
     dataString += padDigits(second(myTime));
     dataString += ",";
 
+    // temperature
+    dataString += RTC.temperature();
+    dataString += ",";
+
     // GPS
-    if (nmea.isValid()) {
+    if (nmea.location.isValid()) {
       // lat/lon
-      dataString += String(nmea.getLatitude()/1000000, 8);
+      dataString += String(nmea.location.lat(), 6);//1000000
       dataString += ',';
-      dataString += String(nmea.getLongitude()/1000000, 8);
+      dataString += String(nmea.location.lng(), 6);//1000000
       dataString += ',';
       
-      long alt;
-      dataString += String(nmea.getAltitude(alt)/1000, 8);
+      //long alt;
+      dataString += String(nmea.altitude.meters(), 8);//1000
       dataString += ',';
     } else {
       // No GPS data
-      dataString += F("NoLAT,NoLON,NoALT,");
+      dataString += F("NoLAT,NoLNG,NoALT,");
     }
 
     // Analog sensor reading, pin A0
@@ -253,10 +247,22 @@ void loop()
     // ok to reset sensor delay
     sensor_ms = millis();
 
+    // extra GPS data
+    Serial.print(F("Satellites: "));
+    Serial.println(nmea.satellites.value());
+    Serial.print(F("charsProcessed: "));
+    Serial.println(nmea.charsProcessed());
+    Serial.print(F("sentencesWithFix: "));
+    Serial.println(nmea.sentencesWithFix());
+    Serial.print(F("failedChecksum: "));
+    Serial.println(nmea.failedChecksum());
+    Serial.print(F("passedChecksum: "));
+    Serial.println(nmea.passedChecksum());
+
   }
 
   // no GPS data, blink the LED pattern
-  if (!nmea.isValid()) {
+  if (!nmea.location.isValid()) {
     if (no_gps_led_state > 0) {
       if ( (ledValue && (millis() - blink_ms) > NO_GPS_LED_ON_MS)
         || (!ledValue && (millis() - blink_ms) > NO_GPS_LED_OFF_MS) ) {
