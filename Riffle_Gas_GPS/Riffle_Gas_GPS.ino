@@ -18,7 +18,7 @@
  * continue to be logged without the GPS data.
  * A failed SD Card is signaled by rapid blinking at boot up.
  *
- * Communication with the GPS is through the MicroNMEA library because it seems
+ * Communication with the GPS is through the TinyGPS++ library because it seems
  * to use less resources on the ATmega328P than other GPS libraries.
  * 
  * Riffle 2x7 connector <-->  MQ-4 sensor board
